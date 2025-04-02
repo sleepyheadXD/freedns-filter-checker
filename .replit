@@ -5,7 +5,7 @@ run = "npm run start"
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "npm run start"]
+run = ["sh", "-c", "node server.js"]
 
 [[ports]]
 localPort = 8080
