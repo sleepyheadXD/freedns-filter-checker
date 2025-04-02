@@ -11,6 +11,23 @@
   --button-shadow: rgba(109, 138, 239, 0.3);
   --card-shadow: rgba(0, 0, 0, 0.2);
   --border-radius: 12px;
+  --toggle-bg: #2a3649;
+  --toggle-red: #ff5252;
+}
+
+[data-theme="light"] {
+  --background: #f8f9fa;
+  --background2: #e9ecef;
+  --background3: #dee2e6;
+  --highlight: #dc3545;
+  --text-color: #212529;
+  --loading-color: #ffc107;
+  --progress-color: #0d6efd;
+  --button-hover: #20c997;
+  --button-shadow: rgba(220, 53, 69, 0.3);
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --toggle-bg: #dee2e6;
+  --toggle-red: #dc3545;
 }
 
 body {
@@ -173,6 +190,64 @@ button:active {
   width: 0%;
   height: 100%;
   background-color: var(--progress-color);
+
+/* Dark mode toggle */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--toggle-bg);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--toggle-red);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.theme-icon {
+  margin-right: 8px;
+  color: var(--text-color);
+}
+
   transition: width 0.4s ease;
   border-radius: var(--border-radius);
 }

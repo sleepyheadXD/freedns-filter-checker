@@ -18,6 +18,13 @@
     <a href="./freedns.html">
       <i class="fas fa-globe"></i> FreeDNS Domain Extractor
     </a>
+    <div class="theme-switch-wrapper">
+      <i class="fas fa-moon theme-icon"></i>
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
   <div class="desc">
     <h1><i class="fas fa-shield-alt"></i> FreeDNS Filter Checker</h1>
@@ -77,6 +84,38 @@
         loadingDiv.style.display = 'none';
         progressContainer.style.display = 'none';
         button.disabled = false;
+
+  <script>
+    // Dark mode toggle functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      // Check for saved theme preference or default to dark
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      
+      // Update toggle position based on current theme
+      if (currentTheme === 'light') {
+        themeToggle.checked = true;
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
+      }
+      
+      // Toggle theme when switch is clicked
+      themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          themeIcon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+          themeIcon.classList.replace('fa-sun', 'fa-moon');
+        }
+      });
+    });
+  </script>
+
         button.innerHTML = '<i class="fas fa-search"></i> Check Links';
 
         if (data.unblocked.length > 0) {
