@@ -5,64 +5,108 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>FreeDNS Filter Checker</title>
 </head>
 
 <body>
   <div class="nav">
     <a href="/">
-      Filter Checker
+      <i class="fas fa-filter"></i> Filter Checker
     </a>
     <a href="./freedns.html">
-      FreeDNS Domain Extractor
+      <i class="fas fa-globe"></i> FreeDNS Domain Extractor
     </a>
   </div>
   <div class="desc">
-    <h1>FreeDNS Filter Checker</h1>
-    <p>Only Lightspeed Filter is supported.</p>
+    <h1><i class="fas fa-shield-alt"></i> FreeDNS Filter Checker</h1>
+    <p>Only Lightspeed Filter is supported. Enter domains to check their filter status.</p>
   </div>
-  <textarea id="urls" rows="5" placeholder="Enter one URL per line..."></textarea><br>
-  <button onclick="checkLinks()">Check Links</button>
-  <div id="loading">Fetching...</div>
+  <textarea id="urls" rows="5" placeholder="Enter one URL per line..."></textarea>
+  <button onclick="checkLinks()"><i class="fas fa-search"></i> Check Links</button>
+  <div id="loading"><i class="fas fa-spinner fa-spin"></i> Fetching results...</div>
   <div id="progress-container">
     <div id="progress-bar"></div>
   </div>
   <div id="result"></div>
 
   <script>
+    // Check if there are domains passed from the extractor page
+    window.addEventListener('load', function() {
+      const domains = localStorage.getItem('extractedDomains');
+      if (domains) {
+        document.getElementById('urls').value = domains;
+        localStorage.removeItem('extractedDomains');
+      }
+    });
+    
     async function checkLinks() {
       const resultDiv = document.getElementById('result');
       const loadingDiv = document.getElementById('loading');
       const progressContainer = document.getElementById('progress-container');
       const progressBar = document.getElementById('progress-bar');
+      const button = document.querySelector('button');
 
       resultDiv.innerHTML = '';
       loadingDiv.style.display = 'block';
       progressContainer.style.display = 'block';
       progressBar.style.width = '0%';
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
       const urls = document.getElementById('urls').value.split('\n').map(url => url.trim()).filter(url => url);
       if (urls.length === 0) {
-        resultDiv.innerHTML = 'Please enter URLs to check.';
+        resultDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter URLs to check.';
         loadingDiv.style.display = 'none';
         progressContainer.style.display = 'none';
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-search"></i> Check Links';
         return;
       }
 
-      const response = await fetch('/check-links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls })
-      });
+      try {
+        const response = await fetch('/check-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      loadingDiv.style.display = 'none';
-      progressContainer.style.display = 'none';
+        loadingDiv.style.display = 'none';
+        progressContainer.style.display = 'none';
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-search"></i> Check Links';
 
-      resultDiv.innerHTML = data.unblocked.length > 0
-        ? `<h3>Unblocked Domains</h3><p>${data.unblocked.join('<br>')}</p>`
-        : 'No unblocked domains found.';
+        if (data.unblocked.length > 0) {
+          resultDiv.innerHTML = `
+            <h3><i class="fas fa-unlock"></i> Unblocked Domains (${data.unblocked.length})</h3>
+            <p>${data.unblocked.join('<br>')}</p>
+            <div style="margin-top: 10px">
+              <button id="copyBtn" style="margin: 0; padding: 8px 12px; font-size: 0.9em;">
+                <i class="fas fa-copy"></i> Copy Results
+              </button>
+            </div>
+          `;
+          document.getElementById('copyBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(data.unblocked.join('\n'));
+            document.getElementById('copyBtn').innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+              document.getElementById('copyBtn').innerHTML = '<i class="fas fa-copy"></i> Copy Results';
+            }, 2000);
+          });
+        } else {
+          resultDiv.innerHTML = '<i class="fas fa-ban"></i> No unblocked domains found.';
+        }
+      } catch (error) {
+        loadingDiv.style.display = 'none';
+        progressContainer.style.display = 'none';
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-search"></i> Check Links';
+        resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> An error occurred. Please try again.';
+        console.error('Error:', error);
+      }
     }
 
     const progressSource = new EventSource('/progress');
@@ -72,6 +116,9 @@
       progressBar.style.width = progress.percentage + '%';
     };
   </script>
+</body>
+
+</html>
 </body>
 
 </html>

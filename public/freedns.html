@@ -5,35 +5,89 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>FreeDNS Domain Extractor</title>
 </head>
 
 <body>
   <div class="nav">
     <a href="/">
-      Filter Checker
+      <i class="fas fa-filter"></i> Filter Checker
     </a>
     <a href="./freedns.html">
-      FreeDNS Domain Extractor
+      <i class="fas fa-globe"></i> FreeDNS Domain Extractor
     </a>
   </div>
   <div class="desc">
-    <h1>FreeDNS Domain Extractor</h1>
+    <h1><i class="fas fa-code"></i> FreeDNS Domain Extractor</h1>
     <p>Extracts only domains from text. Select all text in FreeDNS, and paste it here!</p>
   </div>
   <textarea id="inputText" rows="10" placeholder="Paste your text here..."></textarea>
-  <br>
-  <button id="extractButton">Extract Domains</button>
+  <button id="extractButton"><i class="fas fa-magic"></i> Extract Domains</button>
   <div id="outputText"></div>
 
   <script>
     document.getElementById('extractButton').addEventListener('click', function () {
+      const button = document.getElementById('extractButton');
+      const outputText = document.getElementById('outputText');
       const inputText = document.getElementById('inputText').value;
-      const domainRegex = /([a-zA-Z0-9-]+\.[a-zA-Z]{2,})/g;
-      const extractedDomains = inputText.match(domainRegex);
-      const uniqueDomains = [...new Set(extractedDomains)];
-
-      document.getElementById('outputText').innerHTML = uniqueDomains ? uniqueDomains.join('<br>') : 'No domains found.';
+      
+      if (!inputText.trim()) {
+        outputText.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please paste text to extract domains.';
+        return;
+      }
+      
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extracting...';
+      
+      setTimeout(() => {
+        const domainRegex = /([a-zA-Z0-9-]+\.[a-zA-Z]{2,})/g;
+        const extractedDomains = inputText.match(domainRegex);
+        const uniqueDomains = extractedDomains ? [...new Set(extractedDomains)] : [];
+        
+        if (uniqueDomains.length > 0) {
+          outputText.innerHTML = `
+            <h3><i class="fas fa-globe"></i> Extracted Domains (${uniqueDomains.length})</h3>
+            <p>${uniqueDomains.join('<br>')}</p>
+            <div style="margin-top: 10px">
+              <button id="copyBtn" style="margin: 0; padding: 8px 12px; font-size: 0.9em;">
+                <i class="fas fa-copy"></i> Copy All
+              </button>
+              <button id="filterBtn" style="margin: 0 0 0 10px; padding: 8px 12px; font-size: 0.9em;">
+                <i class="fas fa-filter"></i> Go to Filter Checker
+              </button>
+            </div>
+          `;
+          
+          document.getElementById('copyBtn').addEventListener('click', function() {
+            navigator.clipboard.writeText(uniqueDomains.join('\n'));
+            this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+              this.innerHTML = '<i class="fas fa-copy"></i> Copy All';
+            }, 2000);
+          });
+          
+          document.getElementById('filterBtn').addEventListener('click', function() {
+            localStorage.setItem('extractedDomains', uniqueDomains.join('\n'));
+            window.location.href = '/';
+          });
+        } else {
+          outputText.innerHTML = '<i class="fas fa-ban"></i> No domains found in the provided text.';
+        }
+        
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-magic"></i> Extract Domains';
+      }, 500);
+    });
+    
+    // Check if there are domains in localStorage when the page loads
+    window.addEventListener('load', function() {
+      const domains = localStorage.getItem('extractedDomains');
+      if (domains) {
+        document.getElementById('inputText').value = domains;
+        localStorage.removeItem('extractedDomains');
+      }
     });
   </script>
 </body>
